@@ -718,3 +718,41 @@ bool are_pluto_matrices_equal(PlutoMatrix *mat1, PlutoMatrix *mat2) {
   }
   return true;
 }
+
+/**
+ * @brief Copy a row from src to dest
+ * Dest and src should have the same number of columns
+ * dest_row and src_row are 0-indexed
+ * @param dest
+ * @param dest_row
+ * @param src
+ * @param src_row
+ */
+void pluto_matrix_copy_row(PlutoMatrix *dest, int dest_row, PlutoMatrix *src,
+                           int src_row) {
+  assert(dest->ncols == src->ncols);
+  for (int j = 0; j < dest->ncols; j++) {
+    dest->val[dest_row][j] = src->val[src_row][j];
+  }
+}
+
+/**
+ * @brief Check if two rows from two matrices are equal
+ * mat1 and mat2 should have the same number of columns
+ * rows are 0-indexed
+ * @param mat1
+ * @param r1
+ * @param mat2
+ * @param r2
+ * @return int
+ */
+int pluto_matrix_rows_are_equal(PlutoMatrix *mat1, int r1, PlutoMatrix *mat2,
+                                int r2) {
+  assert(mat1->ncols == mat2->ncols);
+  for (int j = 0; j < mat1->ncols; j++) {
+    if (mat1->val[r1][j] != mat2->val[r2][j])
+
+      return 0;
+  }
+  return 1;
+}

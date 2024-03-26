@@ -58,6 +58,11 @@ void pluto_matrix_negate_row(PlutoMatrix *mat, int pos);
 void pluto_matrix_add(PlutoMatrix *mat1, const PlutoMatrix *mat2);
 void gaussian_eliminate(PlutoMatrix *mat, int start, int end);
 
+void pluto_matrix_copy_row(PlutoMatrix *dest, int dest_row, PlutoMatrix *src,
+                           int src_row);
+int pluto_matrix_rows_are_equal(PlutoMatrix *mat1, int r1, PlutoMatrix *mat2,
+                                int r2);
+
 int64_t lcm(int64_t a, int64_t b);
 int64_t gcd(int64_t a, int64_t b);
 int64_t *min_lexical(int64_t *a, int64_t *b, int64_t num);
