@@ -20,4 +20,7 @@ void trahrhe_gen_stmts_macro(const PlutoProg *prog, FILE *outfp);
 
 void trahrhe_gen_var_decls(const PlutoProg *prog, FILE *outfp);
 
+int trahrhe_clast_pass_remove_outermost_guards(CloogOptions *options,
+                                               struct clast_stmt *stmt);
+
 #endif // ALGEBRAIC_CODEGEN_H

@@ -38,6 +38,41 @@ struct clast_stmt **clast_get_next_ptr(struct clast_stmt *stmt) {
   }
 }
 
+int trahrhe_clast_pass_remove_outermost_guards(CloogOptions *options,
+                                               struct clast_stmt *root) {
+  fprintf(stderr, "[trahrhe-ast] remove guards pass\n");
+  if (root == NULL && root->next == NULL)
+    return 0;
+
+  struct clast_stmt *prev = root;
+  struct clast_stmt *stmt = root->next;
+  int removed = 0;
+  // Iterate through statement
+  while (stmt != NULL) {
+    // If the statement is a guard
+    if (CLAST_STMT_IS_A(stmt, stmt_guard)) {
+      struct clast_guard *guard = (struct clast_guard *)stmt;
+      struct clast_stmt *content = guard->then;
+
+      prev->next = content;
+      for (; content->next != NULL; content = content->next)
+        ;
+      content->next = stmt->next;
+
+      stmt = content;
+
+      guard->then = NULL;
+      guard->stmt.next = NULL;
+      cloog_clast_free((struct clast_stmt *)guard);
+
+      removed++;
+    }
+    prev = stmt;
+    stmt = stmt->next;
+  }
+  return removed;
+}
+
 /*
   Return the next statement according to the depth first traversal of the
     syntax tree
@@ -289,6 +324,9 @@ void trahrhe_tiling_transform(struct clast_stmt *root, const PlutoProg *prog,
                               CloogOptions *cloogOptions, FILE *outfp) {
   insert_tiling_statements(root, prog, cloogOptions, outfp);
   replace_tiled_loop_bounds(root, prog, cloogOptions);
+
+  while (trahrhe_clast_pass_remove_outermost_guards(cloogOptions, root))
+    ;
 
   FILE *fp = fopen(TRAHRHE_GEN_FILENAME, "w");
   trahrhe_write_gen_info(prog, fp);
