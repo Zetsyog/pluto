@@ -24,7 +24,9 @@ pluto_SOURCES = \
 		osl_pluto.c \
 		pet_to_pluto.cpp \
 		pluto_codegen_if.c \
-		version.h
+		version.h \
+      trahrhe_codegen.h \
+      trahrhe_codegen.c
 
 pluto_CXXFLAGS = $(OPT_FLAGS) $(DEBUG_FLAGS) \
    -DSCOPLIB_INT_T_IS_LONGLONG -DCLOOG_INT_GMP -DPLUTO_OPENCL \

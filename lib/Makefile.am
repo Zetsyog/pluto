@@ -31,6 +31,8 @@ libpluto_la_SOURCES = \
 		      libpluto_dummy.c \
 		      math_support.c \
 		      math_support.h \
+			  trahrhe.c \
+			  trahrhe.h \
 		      pluto.c \
 		      plutolib.c \
 		      pluto.h \

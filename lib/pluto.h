@@ -207,6 +207,15 @@ struct statement {
   PlutoConstraints *intra_stmt_dep_cst;
 
   struct pet_stmt *pstmt;
+
+  /* Algebraic Tiling data */
+  int tiled_loops;
+  int (*tiled_dim_cst_idx)[2];
+  int *tiling_loop_depths;
+  int *tiled_params_idx;
+  PlutoMatrix **tiled_depth_to_trans_mat_row; // 1d array of matrices
+  PlutoMatrix *original_iterators_mat;
+  char *isl_scheduled_domain_str;
 };
 typedef struct statement Stmt;
 
@@ -373,6 +382,9 @@ struct plutoProg {
   /* Number of program parameters */
   int npar;
 
+  /* Original number of program parameters */
+  int npar_orig;
+
   /* Param context */
   PlutoConstraints *param_context;
 
@@ -418,6 +430,8 @@ struct plutoProg {
   long int num_lp_calls;
 
   PlutoContext *context;
+
+  struct trahrhe_prog_data *trahrhe_data;
 };
 typedef struct plutoProg PlutoProg;
 
@@ -710,6 +724,9 @@ void populate_scaling_csr_matrices_for_pluto_program(int ***index,
                                                      PlutoProg *prog);
 PlutoMatrix *construct_cplex_objective(const PlutoConstraints *cst,
                                        const PlutoProg *prog);
+
+void algebraic_tiling(PlutoProg *prog);
+void algebraic_precompute(PlutoProg *prog);
 
 #ifdef GLPK
 Graph *build_fusion_conflict_graph(PlutoProg *prog, int *colour, int num_nodes,

@@ -24,6 +24,7 @@
 #include "pluto/matrix.h"
 #include "pluto/pluto.h"
 #include "program.h"
+#include "trahrhe_codegen.h"
 #include "version.h"
 
 #include "cloog/cloog.h"
@@ -172,6 +173,10 @@ int generate_declarations(const PlutoProg *prog, FILE *outfp) {
   }
   fprintf(outfp, "\n");
 
+  if (prog->context->options->parametric) {
+    trahrhe_gen_var_decls(prog, outfp);
+  }
+
   /* Scattering iterators. */
   if (prog->num_hyperplanes >= 1) {
     fprintf(outfp, "\t\tint ");
@@ -236,8 +241,10 @@ int pluto_gen_cloog_code(const PlutoProg *prog, int cloogf, int cloogl,
 
   /* Generates better code in general */
   cloogOptions->backtrack = options->cloogbacktrack;
-
-  if (options->cloogf >= 1 && options->cloogl >= 1) {
+  if (options->parametric) {
+    cloogOptions->f = -1;
+    cloogOptions->l = -1;
+  } else if (options->cloogf >= 1 && options->cloogl >= 1) {
     cloogOptions->f = options->cloogf;
     cloogOptions->l = options->cloogl;
   } else {
@@ -287,6 +294,10 @@ int pluto_gen_cloog_code(const PlutoProg *prog, int cloogf, int cloogl,
   }
   if (options->parallel) {
     pluto_mark_parallel(root, prog, cloogOptions);
+  }
+  if (options->parametric) {
+    trahrhe_tiling_transform(root, prog, cloogOptions, outfp);
+    trahrhe_gen_stmts_macro(prog, outfp);
   }
   /* Unroll jamming has to be done at the end. We do not want the epilogue to be
    * marked parallel as there will be very few iterations in it. Properties of

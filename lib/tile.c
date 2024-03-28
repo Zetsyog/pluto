@@ -20,6 +20,7 @@
 #include "post_transform.h"
 #include "program.h"
 #include "tile_size_selection_model.h"
+#include "trahrhe.h"
 #include "transforms.h"
 
 /* Read tile sizes from file tile.sizes */
@@ -118,6 +119,15 @@ void pluto_tile_band(PlutoProg *prog, Band *band, int *tile_sizes) {
     num_domain_supernodes[s] = 0;
   }
 
+  for (unsigned s = 0; s < band->loop->nstmts; s++) {
+    Stmt *stmt = band->loop->stmts[s];
+    stmt->tiled_loops = 0;
+    stmt->tiled_dim_cst_idx = malloc(sizeof(int) * 2 * (lastD - firstD + 1));
+    stmt->tiling_loop_depths = malloc(sizeof(int) * (lastD - firstD + 1));
+    stmt->tiled_depth_to_trans_mat_row =
+        calloc(lastD + 1, sizeof(PlutoMatrix *));
+  }
+
   for (unsigned depth = firstD; depth <= lastD; depth++) {
     for (unsigned s = 0; s < band->loop->nstmts; s++) {
       Stmt *stmt = band->loop->stmts[s];
@@ -139,6 +149,11 @@ void pluto_tile_band(PlutoProg *prog, Band *band, int *tile_sizes) {
         /* Domain supernodes aren't added for scalar dimensions */
         pluto_stmt_add_dim(stmt, num_domain_supernodes[s], depth, iter,
                            hyp_type, prog);
+        for (int i = 0; i < stmt->tiled_loops; i++) {
+          pluto_matrix_add_col(stmt->tiled_depth_to_trans_mat_row[i],
+                               num_domain_supernodes[s]);
+        }
+
         /* Add relation b/w tile space variable and intra-tile variables like
          * 32*xt <= 2t+i <= 32xt + 31 */
         /* Lower bound */
@@ -158,8 +173,11 @@ void pluto_tile_band(PlutoProg *prog, Band *band, int *tile_sizes) {
             stmt->trans
                 ->val[(depth - firstD) + 1 + depth][stmt->dim + prog->npar];
 
+        stmt->tiled_dim_cst_idx[stmt->tiled_loops][0] = stmt->domain->nrows - 1;
+
         PlutoConstraints *lb =
             pluto_constraints_select_row(stmt->domain, stmt->domain->nrows - 1);
+
         pluto_update_deps(stmt, lb, prog);
         pluto_constraints_free(lb);
 
@@ -180,13 +198,23 @@ void pluto_tile_band(PlutoProg *prog, Band *band, int *tile_sizes) {
                  ->val[(depth - firstD) + 1 + depth][stmt->dim + prog->npar] +
             tile_sizes[depth - firstD] - 1;
 
+        stmt->tiled_dim_cst_idx[stmt->tiled_loops][1] = stmt->domain->nrows - 1;
+
         PlutoConstraints *ub =
             pluto_constraints_select_row(stmt->domain, stmt->domain->nrows - 1);
         pluto_update_deps(stmt, ub, prog);
         pluto_constraints_free(ub);
 
-        num_domain_supernodes[s]++;
+        stmt->tiling_loop_depths[stmt->tiled_loops] = depth;
+        stmt->tiled_depth_to_trans_mat_row[stmt->tiled_loops] =
+            pluto_matrix_alloc(1, stmt->trans->ncols, prog->context);
 
+        pluto_matrix_copy_row(
+            stmt->tiled_depth_to_trans_mat_row[stmt->tiled_loops], 0,
+            stmt->trans, firstD + (depth - firstD) + 1 + (depth - firstD));
+
+        num_domain_supernodes[s]++;
+        stmt->tiled_loops++;
       } else {
         /* Scattering function for tile space iterator is set the
          * same as its associated domain iterator
@@ -199,6 +227,7 @@ void pluto_tile_band(PlutoProg *prog, Band *band, int *tile_sizes) {
                   ->val[firstD + (depth - firstD) + 1 + (depth - firstD)][j];
         }
       }
+
       stmt->num_tiled_loops++;
       stmt->first_tile_dim = firstD;
       stmt->last_tile_dim = lastD;

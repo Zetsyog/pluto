@@ -125,3 +125,6 @@ libtool
 getversion.sh
 missing
 test_libpluto
+
+# IDE and editor files
+.vscode

@@ -221,6 +221,13 @@ PlutoConstraints *farkas_lemma_affine(const PlutoConstraints *dom,
 void pluto_constraints_gaussian_eliminate(PlutoConstraints *cst, int pos);
 
 int pluto_constraints_get_num_non_zero_coeffs(const PlutoConstraints *cst);
+
+__isl_give isl_basic_set *isl_basic_set_param_from_pluto_constraints(
+    isl_ctx *ctx, const PlutoConstraints *cst, int npar);
+
+__isl_give isl_set *
+isl_set_param_from_pluto_constraints(const PlutoConstraints *cst, isl_ctx *ctx,
+                                     int npar);
 #ifdef GLPK
 int64_t *pluto_prog_constraints_lexmin_glpk(const PlutoConstraints *cst,
                                             PlutoMatrix *obj, double **val,

@@ -25,6 +25,7 @@
 #include "pluto/matrix.h"
 #include "pluto/pluto.h"
 #include "program.h"
+#include "trahrhe.h"
 
 /// Run Pluto on the supplied PlutoProg.
 static int pluto_schedule_prog(PlutoProg *prog) {
@@ -333,6 +334,7 @@ static PlutoProg *pluto_prog_from_isl_domains_dependences(
   if (prog->nstmts > 0) {
     Stmt *stmt = prog->stmts[0];
     prog->npar = stmt->domain->ncols - stmt->dim - 1;
+    prog->npar_orig = prog->npar;
     prog->params = (char **)malloc(sizeof(char *) * prog->npar);
   } else {
     prog->npar = 0;

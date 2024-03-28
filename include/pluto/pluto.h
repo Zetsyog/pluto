@@ -45,6 +45,8 @@ enum fusionType {
 };
 typedef enum fusionType FusionType;
 
+enum ptile_type { rectangular, algebraic, algebraic_standalone };
+
 struct plutoOptions {
 
   /* To tile or not? */
@@ -242,6 +244,11 @@ struct plutoOptions {
 
   /* fast linear independence check */
   int flic;
+
+  /* do parametric tiling */
+  int parametric;
+
+  enum ptile_type *tiling_type_per_depth;
 };
 typedef struct plutoOptions PlutoOptions;
 

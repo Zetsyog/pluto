@@ -38,9 +38,9 @@
 #include "isl/map.h"
 #include "isl/mat.h"
 #include "isl/set.h"
-#include "isl/val.h"
 #include "isl/space.h"
 #include "isl/union_map.h"
+#include "isl/val.h"
 
 /*
  * Converts a [A c] pluto transformations to a [eq -I A c] osl scattering
@@ -1619,6 +1619,7 @@ PlutoProg *osl_scop_to_pluto_prog(osl_scop_p scop, PlutoContext *context) {
   for (i = 0; i < npar; i++) {
     pluto_prog_add_param(prog, osl_scop_params->string[i], prog->npar);
   }
+  prog->npar_orig = prog->npar;
 
   pluto_constraints_free(prog->param_context);
   prog->param_context =

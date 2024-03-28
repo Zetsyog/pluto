@@ -28,6 +28,7 @@
 #include "pluto/matrix.h"
 #include "pluto/pluto.h"
 #include "program.h"
+#include "trahrhe.h"
 
 #include "isl/aff.h"
 #include "isl/flow.h"
@@ -737,6 +738,7 @@ PlutoProg *pluto_prog_alloc(PlutoContext *context) {
   prog->nstmts = 0;
   prog->stmts = NULL;
   prog->npar = 0;
+  prog->npar_orig = 0;
   prog->nvar = 0;
   prog->params = NULL;
   prog->param_context = pluto_constraints_alloc(1, prog->npar + 1, context);
@@ -776,6 +778,8 @@ PlutoProg *pluto_prog_alloc(PlutoContext *context) {
 
   prog->tss_time = 0.0;
   prog->num_lp_calls = 0;
+
+  prog->trahrhe_data = trahrhe_prog_data_alloc();
 
   return prog;
 }
@@ -827,6 +831,8 @@ void pluto_prog_free(PlutoProg *prog) {
     free(prog->data_names[i]);
   }
   free(prog->data_names);
+
+  trahrhe_prog_data_free(prog->trahrhe_data);
 
   free(prog);
 }
@@ -935,6 +941,8 @@ PlutoOptions *pluto_options_alloc() {
   options->out_file = NULL;
 
   options->time = 1;
+
+  options->parametric = 0;
 
   return options;
 }
@@ -1400,6 +1408,14 @@ Stmt *pluto_stmt_alloc(unsigned dim, const PlutoConstraints *domain,
     stmt->iterators = NULL;
   }
 
+  /* Algebraic tiling data */
+  stmt->tiled_loops = 0;
+  stmt->tiled_dim_cst_idx = NULL;
+  stmt->tiled_params_idx = NULL;
+  stmt->tiling_loop_depths = NULL;
+  stmt->original_iterators_mat = NULL;
+  stmt->tiled_depth_to_trans_mat_row = NULL;
+
   return stmt;
 }
 
@@ -1459,6 +1475,31 @@ void pluto_stmt_free(Stmt *stmt) {
   }
 
   pluto_matrix_free(stmt->evicted_hyp);
+
+  if (stmt->tiled_dim_cst_idx != NULL) {
+    free(stmt->tiled_dim_cst_idx);
+  }
+
+  if (stmt->tiled_params_idx != NULL) {
+    free(stmt->tiled_params_idx);
+  }
+
+  if (stmt->original_iterators_mat != NULL) {
+    pluto_matrix_free(stmt->original_iterators_mat);
+  }
+
+  if (stmt->tiling_loop_depths != NULL) {
+    free(stmt->tiling_loop_depths);
+  }
+
+  if (stmt->isl_scheduled_domain_str != NULL) {
+    free(stmt->isl_scheduled_domain_str);
+  }
+
+  for (int i = 0; i < stmt->tiled_loops; i++) {
+    pluto_matrix_free(stmt->tiled_depth_to_trans_mat_row[i]);
+  }
+  free(stmt->tiled_depth_to_trans_mat_row);
 
   free(stmt);
 }

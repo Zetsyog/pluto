@@ -40,6 +40,8 @@
 
 #include "pet.h"
 
+#include "trahrhe.h"
+
 void usage_message(void) {
   fprintf(stdout, "Usage: polycc <input.c> [options] [-o output]\n");
   fprintf(stdout, "\nOptions:\n");
@@ -271,6 +273,8 @@ int main(int argc, char *argv[]) {
 #endif
     {"islsolve", no_argument, &options->islsolve, 1},
     {"time", no_argument, &options->time, 1},
+    {"ptile", no_argument, &options->parametric, 1},
+    {"gentrahrhe", no_argument, NULL, 0},
     {0, 0, 0, 0}
   };
 
@@ -538,6 +542,23 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"
     return 1;
   }
 
+  if (options->parametric) {
+    options->tile = 1;
+    options->cloogbacktrack = 0;
+    if (options->diamondtile || options->fulldiamondtile) {
+      printf("[pluto] Algebraic tiling is not supported with diamond tiling. "
+             "Turning off diamond tiling\n");
+      options->diamondtile = 0;
+      options->fulldiamondtile = 0;
+    }
+    if (options->unrolljam) {
+      fprintf(stderr,
+              "[pluto] Algebraic tiling is not supported with unrolljam. "
+              "Turning off unrolljam\n");
+      options->unrolljam = 0;
+    }
+  }
+
   /* Extract polyhedral representation from osl scop */
   PlutoProg *prog = NULL;
 
@@ -672,6 +693,8 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"
     pluto_transformations_pretty_print(prog);
   }
 
+  algebraic_precompute(prog);
+
   if (options->tile) {
     pluto_tile(prog);
   } else {
@@ -699,6 +722,10 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"
       fprintf(stdout, "[pluto] After skewing:\n");
       pluto_transformations_pretty_print(prog);
     }
+  }
+
+  if (options->parametric) {
+    algebraic_tiling(prog);
   }
 
   double t_c = 0.0;

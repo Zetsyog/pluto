@@ -493,3 +493,77 @@ pluto_constraints_intersect_isl(PlutoConstraints *cst1,
 
   return cst1;
 }
+
+/**
+ * Construct a parametric basic set from the constraints in cst;
+ * uses the first element in cst
+ */
+__isl_give isl_basic_set *isl_basic_set_param_from_pluto_constraints(
+    isl_ctx *ctx, const PlutoConstraints *cst, int npar) {
+  int n_eq = 0, n_ineq = 0;
+  isl_space *dim;
+  isl_mat *eq, *ineq;
+  isl_basic_set *bset;
+
+  for (unsigned i = 0; i < cst->nrows; ++i)
+    if (cst->is_eq[i])
+      n_eq++;
+    else
+      n_ineq++;
+
+  eq = isl_mat_alloc(ctx, n_eq, cst->ncols);
+  ineq = isl_mat_alloc(ctx, n_ineq, cst->ncols);
+
+  dim = isl_space_set_alloc(ctx, npar, cst->ncols - 1 - npar);
+
+  n_eq = n_ineq = 0;
+  for (unsigned i = 0; i < cst->nrows; ++i) {
+    isl_mat **m;
+    int row;
+
+    if (cst->is_eq[i]) {
+      m = &eq;
+      row = n_eq++;
+    } else {
+      m = &ineq;
+      row = n_ineq++;
+    }
+
+    for (unsigned j = 0; j < cst->ncols; ++j) {
+      mpz_t tmp, one;
+      mpz_init(tmp);
+      mpz_init(one);
+      mpz_set_ui(one, 1);
+      mpz_set_sll(tmp, cst->val[i][j]);
+      isl_val *v = isl_val_from_gmp(ctx, tmp, one);
+      *m = isl_mat_set_element_val(*m, row, j, v);
+      mpz_clear(tmp);
+      mpz_clear(one);
+    }
+  }
+
+  bset = isl_basic_set_from_constraint_matrices(
+      dim, eq, ineq, isl_dim_set, isl_dim_div, isl_dim_param, isl_dim_cst);
+  return bset;
+}
+
+/**
+ * Construct a parametric set from the constraints in cst
+ */
+__isl_give isl_set *
+isl_set_param_from_pluto_constraints(const PlutoConstraints *cst, isl_ctx *ctx,
+                                     int npar) {
+  isl_set *set;
+
+  isl_space *dim = isl_space_set_alloc(ctx, npar, cst->ncols - 1 - npar);
+  set = isl_set_empty(dim);
+
+  while (cst != NULL) {
+    isl_basic_set *bset =
+        isl_basic_set_param_from_pluto_constraints(ctx, cst, npar);
+    set = isl_set_union_disjoint(set, isl_set_from_basic_set(bset));
+    cst = cst->next;
+  }
+
+  return set;
+}
