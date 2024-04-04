@@ -374,7 +374,7 @@ void pluto_tile_scattering_dims(PlutoProg *prog, Band **bands, int nbands,
   for (unsigned b = 0; b < nbands; b++) {
     if (options->find_tile_sizes)
       find_tile_sizes(bands[b], prog, tile_sizes);
-    else
+    else if (options->parametric == 0)
       read_tile_sizes(tile_sizes, second_level_tile_size_ratios,
                       bands[b]->width, bands[b]->loop->stmts,
                       bands[b]->loop->nstmts, bands[b]->loop->depth,
