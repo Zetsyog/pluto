@@ -148,8 +148,6 @@ void replace_tiled_loop_bounds(struct clast_stmt *root, const PlutoProg *prog,
       }
     }
 
-    pluto_matrix_print(stderr, tiled_stmt->trans);
-
     for (int i = 0; i < max_tiled_loops; i++) {
       fprintf(stderr, "[trahrhe-ast] Tiling loop %d\n", i);
       unsigned nloops, nstmts;
@@ -252,6 +250,8 @@ void insert_tiling_statements(struct clast_stmt *root, const PlutoProg *prog,
       }
     }
 
+    char *band_domain_str = pluto_band_isl_domain(band);
+
     for (int i = 0; i < max_tiled_loops; i++) {
       unsigned nloops, nstmts;
       int *stmts;
@@ -265,55 +265,62 @@ void insert_tiling_statements(struct clast_stmt *root, const PlutoProg *prog,
 
       fprintf(stderr, "[trahrhe-ast] Looking for iter: %s\n", iter);
       for (unsigned k = 0; k < nloops; k++) {
+        // retrieve the statement before the current loop in the ast
         struct clast_stmt *stmt_before =
             get_stmt_before(root, (struct clast_stmt *)loops[k]);
 
-        unsigned header_stmt_id;
-        struct clast_user_stmt *trahrhe_header_stmt = trahrhe_clast_create_stmt(
-            cloogOptions, loops[k]->domain, &header_stmt_id);
+        // retrive the type of parametric tiling we must do at this depth
+        enum ptile_type tiling_type = trahrhe_get_tiling_type_for_depth(
+            prog, tiled_stmt->tiling_loop_depths[i]);
 
+        // create a new ast-node for the header statement
+        unsigned stmt_ids[2] = {0};
+        struct clast_user_stmt *trahrhe_header_stmt = trahrhe_clast_create_stmt(
+            cloogOptions, loops[k]->domain, &stmt_ids[0]);
+        // insert the node before the current loop
         clast_insert_after(stmt_before,
                            (struct clast_stmt *)trahrhe_header_stmt);
-        struct trahrhe_codegen_data stmt_data = {
-            .stmt_type = head,
-            .tiling_type = algebraic,
-            .band_id = j,
-            .stmt_id = header_stmt_id,
-            .depth = i,
-            .ub_expr = NULL,
-        };
-        stmt_data.iterator_name = strdup(loops[k]->iterator);
-        trahrhe_add_stmt_to_gen(prog->trahrhe_data, &stmt_data);
 
-        unsigned body_stmt_id;
+        // do the same for body statement (which is inside the loop)
         struct clast_user_stmt *trahrhe_body_stmt = trahrhe_clast_create_stmt(
-            cloogOptions, loops[k]->domain, &body_stmt_id);
-
+            cloogOptions, loops[k]->domain, &stmt_ids[1]);
+        // insert the node inside the current loop
         clast_insert_after((struct clast_stmt *)loops[k],
                            (struct clast_stmt *)trahrhe_body_stmt);
 
-        stmt_data.stmt_id = body_stmt_id;
-        stmt_data.stmt_type = body;
-        stmt_data.iterator_name = strdup(loops[k]->iterator);
-
-        // TODO
         char lb_prefix[13] = {0};
         char ub_prefix[13] = {0};
         snprintf(lb_prefix, 13, "b%d_lb", j);
         snprintf(ub_prefix, 13, "b%d_ub", j);
-        fprintf(stderr, "[trahrhe-ast] Tiling stmt: %s\n",
-                tiled_stmt->isl_scheduled_domain_str);
+        char *lb_expr, *ub_expr;
+        get_ub_expr_from_isl(prog, band_domain_str, i, lb_prefix, ub_prefix,
+                             &lb_expr, &ub_expr);
 
-        get_ub_expr_from_isl(prog, tiled_stmt->isl_scheduled_domain_str, i,
-                             lb_prefix, ub_prefix, &stmt_data.lb_expr,
-                             &stmt_data.ub_expr);
+        for (int l = 0; l < 2; l++) {
+          // create data structure required for code generation
+          struct trahrhe_codegen_data codegen_data = {
+              .stmt_type = l,
+              .tiling_type = tiling_type,
+              .band_id = j,
+              .stmt_id = stmt_ids[l],
+              .depth = i,
+              .lb_expr = strdup(lb_expr),
+              .ub_expr = strdup(ub_expr),
+              .iterator_name = strdup(loops[k]->iterator),
+          };
 
-        trahrhe_add_stmt_to_gen(prog->trahrhe_data, &stmt_data);
+          // store data structure, code generation will be done later
+          trahrhe_add_stmt_to_gen(prog->trahrhe_data, &codegen_data);
+        }
+        free(lb_expr);
+        free(ub_expr);
+
+        fprintf(stderr, "[trahrhe-ast] Tiling stmt: %s\n", band_domain_str);
       }
       free(loops);
       free(stmts);
     }
-
+    free(band_domain_str);
     free(stmtids);
   }
 
@@ -344,10 +351,11 @@ void trahrhe_gen_stmts_macro(const PlutoProg *prog, FILE *outfp) {
 }
 
 void trahrhe_gen_var_decls(const PlutoProg *prog, FILE *outfp) {
-  for (int i = 0; i < prog->trahrhe_data->num_tiled_bands; i++) {
-    fprintf(outfp, "#include \"%s.trahrhe.b%d.h\"\n",
-            prog->context->options->out_file, i);
+  for (int i = 0; i < prog->trahrhe_data->num_header_to_gen; i++) {
+    fprintf(outfp, "#include \"%s\"\n",
+            prog->trahrhe_data->headers_to_gen[i].filename);
   }
+
   // generate variable for newly created parameters
   fprintf(outfp, "long int ");
   for (int i = prog->npar_orig; i < prog->npar; i++) {

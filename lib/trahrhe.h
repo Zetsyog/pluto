@@ -30,6 +30,7 @@ struct trahrhe_header_gen_data {
   int band_id;
   int tiling_level;
   char *domain;
+  char *filename;
   char mask;
 };
 
@@ -39,6 +40,8 @@ struct trahrhe_prog_data {
   int alloc_stmt_to_gen;
   int num_header_to_gen;
   int alloc_header_to_gen;
+  int nptile_types;
+  enum ptile_type *ptile_types;
   struct trahrhe_codegen_data *stmt_to_gen;
   struct trahrhe_header_gen_data *headers_to_gen;
 };
@@ -56,7 +59,12 @@ void get_ub_expr_from_isl(const PlutoProg *prog, const char *isl_str, int pos,
                           char *lb_prefix, char *ub_prefix, char **lb_expr,
                           char **ub_expr);
 
+char *pluto_band_isl_domain(Band *band);
+
 void trahrhe_write_gen_info(const PlutoProg *prog, FILE *fp);
+
+enum ptile_type trahrhe_get_tiling_type_for_depth(const PlutoProg *prog,
+                                                  int depth);
 
 #if defined(__cplusplus)
 }

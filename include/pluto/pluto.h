@@ -45,7 +45,12 @@ enum fusionType {
 };
 typedef enum fusionType FusionType;
 
-enum ptile_type { rectangular, algebraic, algebraic_standalone };
+enum ptile_type {
+  rectangular,
+  algebraic,
+  algebraic_standalone,
+  rectangular_standalone
+};
 
 struct plutoOptions {
 
@@ -249,6 +254,8 @@ struct plutoOptions {
   int parametric;
 
   enum ptile_type *tiling_type_per_depth;
+
+  char *tiling_types;
 };
 typedef struct plutoOptions PlutoOptions;
 

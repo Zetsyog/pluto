@@ -196,87 +196,86 @@ int main(int argc, char *argv[]) {
   PlutoOptions *options = context->options;
 
   const struct option pluto_options[] = {
-    {"fast-lin-ind-check", no_argument, &options->flic, 1},
-    {"flic", no_argument, &options->flic, 1},
-    {"tile", no_argument, &options->tile, 1},
-    {"notile", no_argument, &options->tile, 0},
-    {"noparallel", no_argument, &options->parallel, 0},
-    {"intratileopt", no_argument, &options->intratileopt, 1},
-    {"nointratileopt", no_argument, &options->intratileopt, 0},
-    {"pet", no_argument, &options->pet, 1},
-    {"diamond-tile", no_argument, &options->diamondtile, 1},
-    {"nodiamond-tile", no_argument, &options->diamondtile, 0},
-    {"full-diamond-tile", no_argument, &options->fulldiamondtile, 1},
-    {"per-cc-obj", no_argument, &options->per_cc_obj, 1},
-    {"debug", no_argument, &options->debug, true},
-    {"moredebug", no_argument, &options->moredebug, true},
-    {"rar", no_argument, &options->rar, 1},
-    {"identity", no_argument, &options->identity, 1},
-    {"nofuse", no_argument, (int *)&options->fuse, kNoFuse},
-    {"maxfuse", no_argument, (int *)&options->fuse, kMaximalFuse},
-    {"smartfuse", no_argument, (int *)&options->fuse, kSmartFuse},
-    {"typedfuse", no_argument, (int *)&options->fuse, kTypedFuse},
-    {"hybridfuse", no_argument, &options->hybridcut, 1},
-    {"delayedcut", no_argument, &options->delayed_cut, 1},
-    {"parallel", no_argument, &options->parallel, 1},
-    {"parallelize", no_argument, &options->parallel, 1},
-    {"innerpar", no_argument, &options->innerpar, 1},
-    {"iss", no_argument, &options->iss, 1},
-    {"unrolljam", no_argument, &options->unrolljam, 1},
-    {"nounrolljam", no_argument, &options->unrolljam, 0},
-    {"bee", no_argument, &options->bee, 1},
-    {"ufactor", required_argument, 0, 'u'},
-    {"prevector", no_argument, &options->prevector, 1},
-    {"noprevector", no_argument, &options->prevector, 0},
-    {"codegen-context", required_argument, 0, 'c'},
-    {"coeff-bound", required_argument, 0, 'C'},
-    {"cloogf", required_argument, 0, 'F'},
-    {"cloogl", required_argument, 0, 'L'},
-    {"cloogsh", no_argument, &options->cloogsh, 1},
-    {"nocloogbacktrack", no_argument, &options->cloogbacktrack, 0},
-    {"forceparallel", required_argument, 0, 'p'},
-    {"ft", required_argument, 0, 'f'},
-    {"lt", required_argument, 0, 'l'},
-    {"multipar", no_argument, &options->multipar, 1},
-    {"second-level-tile", no_argument, &options->second_level_tile, 1},
-    {"determine-tile-size", no_argument, (int *)&options->find_tile_sizes,
-     true},
-    {"data-element-size", required_argument, 0, 'D'},
-    {"cache-size", required_argument, 0, 'S'},
-    {"version", no_argument, 0, 'v'},
-    {"help", no_argument, 0, 'h'},
-    {"indent", no_argument, 0, 'i'},
-    {"silent", no_argument, &options->silent, 1},
-    {"lastwriter", no_argument, &options->lastwriter, 1},
-    {"nolastwriter", no_argument, &nolastwriter, 1},
-    {"nodepbound", no_argument, &options->nodepbound, 1},
-    {"scalpriv", no_argument, &options->scalpriv, 1},
-    {"isldep", no_argument, &options->isldep, 1},
-    {"candldep", no_argument, &options->candldep, 1},
-    {"isldepaccesswise", no_argument, &options->isldepaccesswise, 1},
-    {"isldepstmtwise", no_argument, &options->isldepaccesswise, 0},
-    {"isldepcoalesce", no_argument, &options->isldepcoalesce, 1},
-    {"readscop", no_argument, &options->readscop, 1},
-    {"pipsolve", no_argument, &options->pipsolve, 1},
+      {"fast-lin-ind-check", no_argument, &options->flic, 1},
+      {"flic", no_argument, &options->flic, 1},
+      {"tile", no_argument, &options->tile, 1},
+      {"notile", no_argument, &options->tile, 0},
+      {"noparallel", no_argument, &options->parallel, 0},
+      {"intratileopt", no_argument, &options->intratileopt, 1},
+      {"nointratileopt", no_argument, &options->intratileopt, 0},
+      {"pet", no_argument, &options->pet, 1},
+      {"diamond-tile", no_argument, &options->diamondtile, 1},
+      {"nodiamond-tile", no_argument, &options->diamondtile, 0},
+      {"full-diamond-tile", no_argument, &options->fulldiamondtile, 1},
+      {"per-cc-obj", no_argument, &options->per_cc_obj, 1},
+      {"debug", no_argument, &options->debug, true},
+      {"moredebug", no_argument, &options->moredebug, true},
+      {"rar", no_argument, &options->rar, 1},
+      {"identity", no_argument, &options->identity, 1},
+      {"nofuse", no_argument, (int *)&options->fuse, kNoFuse},
+      {"maxfuse", no_argument, (int *)&options->fuse, kMaximalFuse},
+      {"smartfuse", no_argument, (int *)&options->fuse, kSmartFuse},
+      {"typedfuse", no_argument, (int *)&options->fuse, kTypedFuse},
+      {"hybridfuse", no_argument, &options->hybridcut, 1},
+      {"delayedcut", no_argument, &options->delayed_cut, 1},
+      {"parallel", no_argument, &options->parallel, 1},
+      {"parallelize", no_argument, &options->parallel, 1},
+      {"innerpar", no_argument, &options->innerpar, 1},
+      {"iss", no_argument, &options->iss, 1},
+      {"unrolljam", no_argument, &options->unrolljam, 1},
+      {"nounrolljam", no_argument, &options->unrolljam, 0},
+      {"bee", no_argument, &options->bee, 1},
+      {"ufactor", required_argument, 0, 'u'},
+      {"prevector", no_argument, &options->prevector, 1},
+      {"noprevector", no_argument, &options->prevector, 0},
+      {"codegen-context", required_argument, 0, 'c'},
+      {"coeff-bound", required_argument, 0, 'C'},
+      {"cloogf", required_argument, 0, 'F'},
+      {"cloogl", required_argument, 0, 'L'},
+      {"cloogsh", no_argument, &options->cloogsh, 1},
+      {"nocloogbacktrack", no_argument, &options->cloogbacktrack, 0},
+      {"forceparallel", required_argument, 0, 'p'},
+      {"ft", required_argument, 0, 'f'},
+      {"lt", required_argument, 0, 'l'},
+      {"multipar", no_argument, &options->multipar, 1},
+      {"second-level-tile", no_argument, &options->second_level_tile, 1},
+      {"determine-tile-size", no_argument, (int *)&options->find_tile_sizes,
+       true},
+      {"data-element-size", required_argument, 0, 'D'},
+      {"cache-size", required_argument, 0, 'S'},
+      {"version", no_argument, 0, 'v'},
+      {"help", no_argument, 0, 'h'},
+      {"indent", no_argument, 0, 'i'},
+      {"silent", no_argument, &options->silent, 1},
+      {"lastwriter", no_argument, &options->lastwriter, 1},
+      {"nolastwriter", no_argument, &nolastwriter, 1},
+      {"nodepbound", no_argument, &options->nodepbound, 1},
+      {"scalpriv", no_argument, &options->scalpriv, 1},
+      {"isldep", no_argument, &options->isldep, 1},
+      {"candldep", no_argument, &options->candldep, 1},
+      {"isldepaccesswise", no_argument, &options->isldepaccesswise, 1},
+      {"isldepstmtwise", no_argument, &options->isldepaccesswise, 0},
+      {"isldepcoalesce", no_argument, &options->isldepcoalesce, 1},
+      {"readscop", no_argument, &options->readscop, 1},
+      {"pipsolve", no_argument, &options->pipsolve, 1},
 #ifdef GLPK
-    {"glpk", no_argument, &options->glpk, 1},
+      {"glpk", no_argument, &options->glpk, 1},
 #endif
 #ifdef GUROBI
-    {"gurobi", no_argument, &options->gurobi, 1},
+      {"gurobi", no_argument, &options->gurobi, 1},
 #endif
 #if defined GLPK || defined GUROBI
-    {"lp", no_argument, &options->lp, 1},
-    {"dfp", no_argument, &options->dfp, 1},
-    {"ilp", no_argument, &options->ilp, 1},
-    {"lpcolor", no_argument, &options->lpcolour, 1},
-    {"clusterscc", no_argument, &options->scc_cluster, 1},
+      {"lp", no_argument, &options->lp, 1},
+      {"dfp", no_argument, &options->dfp, 1},
+      {"ilp", no_argument, &options->ilp, 1},
+      {"lpcolor", no_argument, &options->lpcolour, 1},
+      {"clusterscc", no_argument, &options->scc_cluster, 1},
 #endif
-    {"islsolve", no_argument, &options->islsolve, 1},
-    {"time", no_argument, &options->time, 1},
-    {"ptile", no_argument, &options->parametric, 1},
-    {"gentrahrhe", no_argument, NULL, 0},
-    {0, 0, 0, 0}
-  };
+      {"islsolve", no_argument, &options->islsolve, 1},
+      {"time", no_argument, &options->time, 1},
+      {"ptile", required_argument, NULL, 0},
+      {"gentrahrhe", no_argument, NULL, 0},
+      {0, 0, 0, 0}};
 
   /* Read command-line options */
   while (1) {
@@ -289,6 +288,15 @@ int main(int argc, char *argv[]) {
 
     switch (option) {
     case 0:
+      if (strcmp(pluto_options[option_index].name, "ptile") == 0) {
+        if (optarg == NULL) {
+          printf("ERROR: Missing argument for --ptile\n");
+          return 2;
+        }
+        options->parametric = 1;
+        options->tile = 1;
+        options->tiling_types = optarg;
+      }
       break;
     case 'D':
       options->data_element_size = atoi(optarg);
@@ -382,6 +390,32 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"
     usage_message();
     pluto_options_free(options);
     return 5;
+  }
+
+  char *basec, *bname;
+  char *outFileName;
+  if (options->out_file == NULL) {
+    /* Get basename, remove .c extension and append a new one */
+    basec = strdup(srcFileName);
+    bname = basename(basec);
+
+    /* max size when tiled.* */
+    outFileName = (char *)malloc(strlen(bname) + strlen(".pluto.c") + 1);
+
+    if (strlen(bname) >= 2 && !strcmp(bname + strlen(bname) - 2, ".c")) {
+      memcpy(outFileName, bname, strlen(bname) - 2);
+      outFileName[strlen(bname) - 2] = '\0';
+    } else {
+      outFileName = (char *)malloc(strlen(bname) + strlen(".pluto.c") + 1);
+      strcpy(outFileName, bname);
+    }
+    strcat(outFileName, ".pluto.c");
+  } else {
+    basec = strdup(options->out_file);
+    bname = basename(basec);
+
+    outFileName = (char *)malloc(strlen(options->out_file) + 1);
+    strcpy(outFileName, options->out_file);
   }
 
   /* Make options consistent. */
@@ -692,8 +726,9 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"
     /* Print out transformations */
     pluto_transformations_pretty_print(prog);
   }
-
-  algebraic_precompute(prog);
+  if (options->parametric) {
+    algebraic_precompute(prog);
+  }
 
   if (options->tile) {
     pluto_tile(prog);
@@ -742,32 +777,6 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"
      * transformations are performed, changed loop order/iterator names will
      * be missed. */
     gen_reg_tile_file(prog);
-
-    char *basec, *bname;
-    char *outFileName;
-    if (options->out_file == NULL) {
-      /* Get basename, remove .c extension and append a new one */
-      basec = strdup(srcFileName);
-      bname = basename(basec);
-
-      /* max size when tiled.* */
-      outFileName = (char *)malloc(strlen(bname) + strlen(".pluto.c") + 1);
-
-      if (strlen(bname) >= 2 && !strcmp(bname + strlen(bname) - 2, ".c")) {
-        memcpy(outFileName, bname, strlen(bname) - 2);
-        outFileName[strlen(bname) - 2] = '\0';
-      } else {
-        outFileName = (char *)malloc(strlen(bname) + strlen(".pluto.c") + 1);
-        strcpy(outFileName, bname);
-      }
-      strcat(outFileName, ".pluto.c");
-    } else {
-      basec = strdup(options->out_file);
-      bname = basename(basec);
-
-      outFileName = (char *)malloc(strlen(options->out_file) + 1);
-      strcpy(outFileName, options->out_file);
-    }
 
     char *cloogFileName;
     if (strlen(bname) >= 2 && !strcmp(bname + strlen(bname) - 2, ".c")) {

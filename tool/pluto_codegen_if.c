@@ -241,10 +241,7 @@ int pluto_gen_cloog_code(const PlutoProg *prog, int cloogf, int cloogl,
 
   /* Generates better code in general */
   cloogOptions->backtrack = options->cloogbacktrack;
-  if (options->parametric) {
-    cloogOptions->f = -1;
-    cloogOptions->l = -1;
-  } else if (options->cloogf >= 1 && options->cloogl >= 1) {
+  if (options->cloogf >= 1 && options->cloogl >= 1) {
     cloogOptions->f = options->cloogf;
     cloogOptions->l = options->cloogl;
   } else {
