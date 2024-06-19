@@ -222,6 +222,48 @@ struct clast_user_stmt *trahrhe_clast_create_stmt(CloogOptions *cloogOptions,
   return user_stmt;
 }
 
+void clast_set_custom_omp_parallel(struct clast_for *loop,
+                                   struct trahrhe_codegen_data *data,
+                                   Stmt *stmt) {
+  if (!(loop->parallel & CLAST_PARALLEL_OMP))
+    return;
+
+  loop->parallel |= CLAST_PARALLEL_USER;
+  char *user_directive = malloc(512);
+  strcpy(user_directive, "omp parallel for firstprivate(");
+
+  for (int i = 0; i <= data->depth; i++) {
+    if (i != 0) {
+      sprintf(user_directive + strlen(user_directive), ",");
+    }
+    sprintf(user_directive + strlen(user_directive), "b%d_ubt%d,",
+            data->band_id, i);
+    sprintf(user_directive + strlen(user_directive), "t%d_pcmax,", i);
+    sprintf(user_directive + strlen(user_directive), "TILE_VOL_L%d", i);
+  }
+
+  sprintf(user_directive + strlen(user_directive), ")");
+  loop->user_directive = strdup(user_directive);
+  free(user_directive);
+
+  char *private_vars = malloc(512);
+  strcpy(private_vars, loop->private_vars);
+  sprintf(private_vars + strlen(private_vars), ",b%d_lb%d,b%d_ub%d",
+          data->band_id, data->depth, data->band_id, data->depth);
+  for (int i = data->depth + 1; i < stmt->num_tiled_loops; i++) {
+    sprintf(private_vars + strlen(private_vars), ",b%d_ubt%d", data->band_id,
+            i);
+    sprintf(private_vars + strlen(private_vars), ",t%d_pcmax,TILE_VOL_L%d", i,
+            i);
+
+    sprintf(private_vars + strlen(private_vars), ",b%d_lb%d,b%d_ub%d",
+            data->band_id, i, data->band_id, i);
+  }
+  free(loop->private_vars);
+  loop->private_vars = strdup(private_vars);
+  free(private_vars);
+}
+
 void insert_tiling_statements(struct clast_stmt *root, const PlutoProg *prog,
                               CloogOptions *cloogOptions, FILE *outfp) {
   assert(root != NULL);
@@ -311,6 +353,9 @@ void insert_tiling_statements(struct clast_stmt *root, const PlutoProg *prog,
 
           // store data structure, code generation will be done later
           trahrhe_add_stmt_to_gen(prog->trahrhe_data, &codegen_data);
+          if (l == 0) {
+            clast_set_custom_omp_parallel(loops[k], &codegen_data, tiled_stmt);
+          }
         }
         free(lb_expr);
         free(ub_expr);
