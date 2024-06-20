@@ -644,7 +644,7 @@ void trahrhe_codegen_header_stmt_algebraic(FILE *fp, const PlutoProg *prog,
           data->depth);
   fprintf(fp, "\\\n"); // new line
 
-  fprintf(fp, "t%d_pcmax = ", data->depth);
+  fprintf(fp, "b%u_t%d_pcmax = ", data->band_id, data->depth);
   fprintf(fp, "b%u_t%d_Ehrhart(", data->band_id, data->depth);
   for (int i = 0; i < prog->npar_orig; i++) {
     fprintf(fp, "%s", prog->params[i]);
@@ -657,8 +657,9 @@ void trahrhe_codegen_header_stmt_algebraic(FILE *fp, const PlutoProg *prog,
   }
   fprintf(fp, ");");
   fprintf(fp, "\\\n"); // new line
-  fprintf(fp, "TILE_VOL_L%d = ", data->depth);
-  fprintf(fp, "t%d_pcmax / DIV%u ", data->depth, data->depth);
+  fprintf(fp, "b%u_TILE_VOL_L%d = ", data->band_id, data->depth);
+  fprintf(fp, "b%u_t%d_pcmax / DIV%u ", data->band_id, data->depth,
+          data->depth);
 }
 
 void trahrhe_codegen_body_stmt_algebraic(FILE *fp, const PlutoProg *prog,
@@ -667,7 +668,8 @@ void trahrhe_codegen_body_stmt_algebraic(FILE *fp, const PlutoProg *prog,
   fprintf(fp, "b%d_lb%u = ", data->band_id, data->depth);
   fprintf(fp, "b%d_t%d_trahrhe_b%d_t%d(", data->band_id, data->depth,
           data->band_id, data->depth);
-  fprintf(fp, "max(1, %s * TILE_VOL_L%d)", data->iterator_name, data->depth);
+  fprintf(fp, "max(1, %s * b%u_TILE_VOL_L%d)", data->iterator_name,
+          data->band_id, data->depth);
 
   // minimum args are prog parameters
   for (int i = 0; i < prog->npar_orig; i++) {
@@ -685,8 +687,8 @@ void trahrhe_codegen_body_stmt_algebraic(FILE *fp, const PlutoProg *prog,
   fprintf(fp, "b%d_ub%u = ", data->band_id, data->depth);
   fprintf(fp, "b%d_t%d_trahrhe_b%d_t%d(", data->band_id, data->depth,
           data->band_id, data->depth);
-  fprintf(fp, "min(t%d_pcmax, (%s + 1) * TILE_VOL_L%d)", data->depth,
-          data->iterator_name, data->depth);
+  fprintf(fp, "min(b%u_t%d_pcmax, (%s + 1) * b%u_TILE_VOL_L%d)", data->band_id,
+          data->depth, data->iterator_name, data->band_id, data->depth);
   // minimum args are prog parameters
   for (int i = 0; i < prog->npar_orig; i++) {
     fprintf(fp, ", %s", prog->params[i]);
@@ -736,7 +738,7 @@ void trahrhe_codegen_header_stmt_algebraic_stdln(
           data->depth);
   fprintf(fp, "\\\n"); // new line
 
-  fprintf(fp, "t%d_pcmax = ", data->depth);
+  fprintf(fp, "b%u_t%d_pcmax = ", data->band_id, data->depth);
   fprintf(fp, "b%u_t%d_Ehrhart(", data->band_id, data->depth);
   for (int i = 0; i < prog->npar_orig; i++) {
     fprintf(fp, "%s", prog->params[i]);
@@ -746,8 +748,9 @@ void trahrhe_codegen_header_stmt_algebraic_stdln(
   }
   fprintf(fp, ");");
   fprintf(fp, "\\\n"); // new line
-  fprintf(fp, "TILE_VOL_L%d = ", data->depth);
-  fprintf(fp, "t%d_pcmax / DIV%u ", data->depth, data->depth);
+  fprintf(fp, "b%u_TILE_VOL_L%d = ", data->band_id, data->depth);
+  fprintf(fp, "b%u_t%d_pcmax / DIV%u ", data->band_id, data->depth,
+          data->depth);
 }
 void trahrhe_codegen_body_stmt_algebraic_stdln(
     FILE *fp, const PlutoProg *prog, struct trahrhe_codegen_data *data) {
@@ -755,7 +758,8 @@ void trahrhe_codegen_body_stmt_algebraic_stdln(
   fprintf(fp, "b%d_lb%u = ", data->band_id, data->depth);
   fprintf(fp, "b%d_t%d_trahrhe_b%d_t%d(", data->band_id, data->depth,
           data->band_id, data->depth);
-  fprintf(fp, "max(1, %s * TILE_VOL_L%d)", data->iterator_name, data->depth);
+  fprintf(fp, "max(1, %s * b%u_TILE_VOL_L%d)", data->iterator_name,
+          data->band_id, data->depth);
 
   // minimum args are prog parameters
   for (int i = 0; i < prog->npar_orig; i++) {
@@ -769,8 +773,8 @@ void trahrhe_codegen_body_stmt_algebraic_stdln(
   fprintf(fp, "b%d_ub%u = ", data->band_id, data->depth);
   fprintf(fp, "b%d_t%d_trahrhe_b%d_t%d(", data->band_id, data->depth,
           data->band_id, data->depth);
-  fprintf(fp, "min(t%d_pcmax, (%s + 1) * TILE_VOL_L%d)", data->depth,
-          data->iterator_name, data->depth);
+  fprintf(fp, "min(b%u_t%d_pcmax, (%s + 1) * b%u_TILE_VOL_L%d)", data->band_id,
+          data->depth, data->iterator_name, data->band_id, data->depth);
   // minimum args are prog parameters
   for (int i = 0; i < prog->npar_orig; i++) {
     fprintf(fp, ", %s", prog->params[i]);

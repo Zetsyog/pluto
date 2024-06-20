@@ -238,8 +238,10 @@ void clast_set_custom_omp_parallel(struct clast_for *loop,
     }
     sprintf(user_directive + strlen(user_directive), "b%d_ubt%d,",
             data->band_id, i);
-    sprintf(user_directive + strlen(user_directive), "t%d_pcmax,", i);
-    sprintf(user_directive + strlen(user_directive), "TILE_VOL_L%d", i);
+    sprintf(user_directive + strlen(user_directive), "b%u_t%d_pcmax,",
+            data->band_id, i);
+    sprintf(user_directive + strlen(user_directive), "b%u_TILE_VOL_L%d",
+            data->band_id, i);
   }
 
   sprintf(user_directive + strlen(user_directive), ")");
@@ -253,7 +255,8 @@ void clast_set_custom_omp_parallel(struct clast_for *loop,
   for (int i = data->depth + 1; i < stmt->num_tiled_loops; i++) {
     sprintf(private_vars + strlen(private_vars), ",b%d_ubt%d", data->band_id,
             i);
-    sprintf(private_vars + strlen(private_vars), ",t%d_pcmax,TILE_VOL_L%d", i,
+    sprintf(private_vars + strlen(private_vars),
+            ",b%u_t%d_pcmax,b%u_TILE_VOL_L%d", data->band_id, i, data->band_id,
             i);
 
     sprintf(private_vars + strlen(private_vars), ",b%d_lb%d,b%d_ub%d",
@@ -417,8 +420,12 @@ void trahrhe_gen_var_decls(const PlutoProg *prog, FILE *outfp) {
       max_tiling_depth = prog->stmts[i]->tiled_loops;
     }
   }
-
-  for (int i = 0; i < max_tiling_depth; i++) {
-    fprintf(outfp, "long int t%d_pcmax, TILE_VOL_L%d;\n", i, i);
+  for (int i = 0; i < prog->trahrhe_data->num_stmt_to_gen; i++) {
+    struct trahrhe_codegen_data *data = &prog->trahrhe_data->stmt_to_gen[i];
+    if (data->stmt_type != head) {
+      continue;
+    }
+    fprintf(outfp, "long int b%u_t%d_pcmax, b%u_TILE_VOL_L%d;\n", data->band_id,
+            data->depth, data->band_id, data->depth);
   }
 }

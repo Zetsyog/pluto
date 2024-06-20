@@ -173,10 +173,6 @@ int generate_declarations(const PlutoProg *prog, FILE *outfp) {
   }
   fprintf(outfp, "\n");
 
-  if (prog->context->options->parametric) {
-    trahrhe_gen_var_decls(prog, outfp);
-  }
-
   /* Scattering iterators. */
   if (prog->num_hyperplanes >= 1) {
     fprintf(outfp, "\t\tint ");
@@ -294,6 +290,7 @@ int pluto_gen_cloog_code(const PlutoProg *prog, int cloogf, int cloogl,
   }
   if (options->parametric) {
     trahrhe_tiling_transform(root, prog, cloogOptions, outfp);
+    trahrhe_gen_var_decls(prog, outfp);
     trahrhe_gen_stmts_macro(prog, outfp);
   }
   /* Unroll jamming has to be done at the end. We do not want the epilogue to be
