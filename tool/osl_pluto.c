@@ -38,9 +38,9 @@
 #include "isl/map.h"
 #include "isl/mat.h"
 #include "isl/set.h"
-#include "isl/val.h"
 #include "isl/space.h"
 #include "isl/union_map.h"
+#include "isl/val.h"
 
 /*
  * Converts a [A c] pluto transformations to a [eq -I A c] osl scattering
@@ -1234,17 +1234,28 @@ static void compute_deps_osl(osl_scop_p scop, PlutoProg *prog,
       isl_map *schedule_i;
       isl_union_map *read_i;
       isl_union_map *write_i;
+
       char name[20];
+
+      int nb_parameters = 0;
+      int nb_iterators = 0;
+      int nb_scattdims = 0;
+      int nb_localdims = 0;
+      int array_id = 0;
 
       snprintf(name, sizeof(name), "S_%d", i);
 
-      int niter = osl_statement_get_nb_iterators(stmt);
-      space = isl_space_set_alloc(ctx, scop->context->nb_parameters, niter);
+      osl_relation_get_attributes(stmt->scattering, &nb_parameters,
+                                  &nb_iterators, &nb_scattdims, &nb_localdims,
+                                  &array_id);
+
+      space =
+          isl_space_set_alloc(ctx, scop->context->nb_parameters, nb_scattdims);
       if (scop->context->nb_parameters) {
         scop_params = (osl_strings_p)scop->parameters->data;
         space = set_names(space, isl_dim_param, scop_params->string);
       }
-      if (niter) {
+      if (nb_iterators) {
         osl_body_p stmt_body =
             (osl_body_p)osl_generic_lookup(stmt->extension, OSL_URI_BODY);
         space = set_names(space, isl_dim_set, stmt_body->iterators->string);
@@ -1253,13 +1264,13 @@ static void compute_deps_osl(osl_scop_p scop, PlutoProg *prog,
       dom = osl_relation_list_to_isl_set(stmt->domain, space);
       dom = isl_set_intersect_params(dom, isl_set_copy(context));
 
-      space = isl_space_alloc(ctx, scop->context->nb_parameters, niter,
-                              2 * niter + 1);
+      space = isl_space_alloc(ctx, scop->context->nb_parameters, nb_iterators,
+                              nb_scattdims);
       if (scop->context->nb_parameters) {
         scop_params = (osl_strings_p)scop->parameters->data;
         space = set_names(space, isl_dim_param, scop_params->string);
       }
-      if (niter) {
+      if (nb_iterators) {
         osl_body_p stmt_body =
             (osl_body_p)osl_generic_lookup(stmt->extension, OSL_URI_BODY);
         space = set_names(space, isl_dim_in, stmt_body->iterators->string);
@@ -1310,14 +1321,24 @@ static void compute_deps_osl(osl_scop_p scop, PlutoProg *prog,
 
         char name[25];
 
+        int nb_parameters = 0;
+        int nb_iterators = 0;
+        int nb_scattdims = 0;
+        int nb_localdims = 0;
+        int array_id = 0;
+
         if (access->elt->type == OSL_TYPE_READ) {
           snprintf(name, sizeof(name), "S_%d_r%d", i, racc_num);
         } else {
           snprintf(name, sizeof(name), "S_%d_w%d", i, wacc_num);
         }
 
-        int niter = osl_statement_get_nb_iterators(stmt);
-        space = isl_space_set_alloc(ctx, scop->context->nb_parameters, niter);
+        osl_relation_get_attributes(stmt->scattering, &nb_parameters,
+                                    &nb_iterators, &nb_scattdims, &nb_localdims,
+                                    &array_id);
+
+        space = isl_space_set_alloc(ctx, scop->context->nb_parameters,
+                                    nb_iterators);
         if (scop->context->nb_parameters) {
           scop_params = (osl_strings_p)scop->parameters->data;
           space = set_names(space, isl_dim_param, scop_params->string);
@@ -1325,7 +1346,7 @@ static void compute_deps_osl(osl_scop_p scop, PlutoProg *prog,
           osl_strings_free(names->parameters);
           names->parameters = osl_strings_clone(scop_params);
         }
-        if (niter) {
+        if (nb_iterators) {
           osl_body_p stmt_body =
               (osl_body_p)osl_generic_lookup(stmt->extension, OSL_URI_BODY);
           space = set_names(space, isl_dim_set, stmt_body->iterators->string);
@@ -1337,13 +1358,13 @@ static void compute_deps_osl(osl_scop_p scop, PlutoProg *prog,
         dom = osl_relation_list_to_isl_set(stmt->domain, space);
         dom = isl_set_intersect_params(dom, isl_set_copy(context));
 
-        space = isl_space_alloc(ctx, scop->context->nb_parameters, niter,
-                                2 * niter + 1);
+        space = isl_space_alloc(ctx, scop->context->nb_parameters, nb_iterators,
+                                nb_scattdims);
         if (scop->context->nb_parameters) {
           scop_params = (osl_strings_p)scop->parameters->data;
           space = set_names(space, isl_dim_param, scop_params->string);
         }
-        if (niter) {
+        if (nb_iterators) {
           osl_body_p stmt_body =
               (osl_body_p)osl_generic_lookup(stmt->extension, OSL_URI_BODY);
           space = set_names(space, isl_dim_in, stmt_body->iterators->string);
